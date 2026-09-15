@@ -2,39 +2,36 @@
 
 ### Paper
 
-Title: `KoCommonGEN v2: A Benchmark for Navigating Korean Commonsense Reasoning Challenges in Large Language Models`
+Title: [KoCommonGEN v2: A Benchmark for Navigating Korean Commonsense Reasoning Challenges in Large Language Models](https://aclanthology.org/2024.findings-acl.141/)
 
-Abstract: The paper presents KoCommonGEN v2, a benchmark for evaluating Korean commonsense reasoning in large language models. It was accepted to ACL 2024-Findings.
+KoCommonGEN v2 is a human-annotated multiple-choice benchmark for evaluating Korean commonsense reasoning in large language models.
 
-Homepage:
+Homepage: https://huggingface.co/datasets/nlpai-lab/ko_commongen_v2
 
 ### Groups and Tasks
 
-#### Groups
-
-
 #### Tasks
 
-- `ko_commongen_v2`
-- `ko_commongen_v2_china (code-switching)`
-- `ko_commongen_v2_japan (code-switching)`
-- `ko_commongen_v2_korea (code-switching)`
-- `ko_commongen_v2_english (code-switching)`
-- `ko_commongen_v2_espanol (code-switching)`
+- `ko_commongen_v2`: The original Korean benchmark.
+- `ko_commongen_v2_china`: The Chinese code-switching variant.
+- `ko_commongen_v2_english`: The English code-switching variant.
+- `ko_commongen_v2_espanol`: The Spanish code-switching variant.
+- `ko_commongen_v2_japan`: The Japanese code-switching variant.
+- `ko_commongen_v2_korean`: The Korean code-switching variant.
 
 ### Citation
 
-```
-@inproceedings{seo2024Kocommongenv2,
-    title = "KoCommonGEN v2: A Benchmark for Navigating Korean Commonsense Reasoning Challenges in Large Language Models",
-    author = "Jaehyung Seo and Jaewook Lee and Chanjun Park and SeongTae Hong and Seungjun Lee and Heuiseok Lim",
+```bibtex
+@inproceedings{seo-etal-2024-kocommongen,
+    title = "{K}o{C}ommon{GEN} v2: A Benchmark for Navigating {K}orean Commonsense Reasoning Challenges in Large Language Models",
+    author = "Seo, Jaehyung and Lee, Jaewook and Park, Chanjun and Hong, SeongTae and Lee, Seungjun and Lim, Heuiseok",
     booktitle = "Findings of the Association for Computational Linguistics: ACL 2024",
-    month = August,
+    month = aug,
     year = "2024",
     address = "Bangkok, Thailand",
     publisher = "Association for Computational Linguistics",
-    url = "TBD",
-    doi = "TBD",
-    pages = "TBD"
+    url = "https://aclanthology.org/2024.findings-acl.141/",
+    doi = "10.18653/v1/2024.findings-acl.141",
+    pages = "2390--2415"
 }
 ```

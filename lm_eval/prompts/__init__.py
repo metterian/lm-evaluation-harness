@@ -1,10 +1,12 @@
 import ast
+import logging
 import os
 from typing import Dict
 
 from lm_eval import utils
-from lm_eval.utils import eval_logger
 
+
+eval_logger = logging.getLogger(__name__)
 
 # Prompt library.
 # Stores prompts in a dictionary indexed by 2 levels:
@@ -96,6 +98,8 @@ def load_prompt_list(
         prompt_list = utils.pattern_match(
             prompt_name, prompt_yaml_file["prompts"].keys()
         )
+    else:
+        raise ValueError(f"Unknown prompt category: {category_name}")
 
     # category_name, *prompt_name = use_prompt.split(":")
     # TODO allow to multiple prompt naming

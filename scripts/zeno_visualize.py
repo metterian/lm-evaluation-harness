@@ -1,5 +1,6 @@
 import argparse
 import json
+import logging
 import os
 import re
 from pathlib import Path
@@ -8,11 +9,13 @@ import pandas as pd
 from zeno_client import ZenoClient, ZenoMetric
 
 from lm_eval.utils import (
-    eval_logger,
     get_latest_filename,
     get_results_filenames,
     get_sample_results_filenames,
 )
+
+
+eval_logger = logging.getLogger(__name__)
 
 
 def parse_args():
@@ -30,6 +33,22 @@ def parse_args():
         help="The name of the generated Zeno project.",
     )
     return parser.parse_args()
+
+
+def sanitize_string(model_args_raw: str | dict) -> str:
+    """Sanitize the model_args string or dict."""
+    # Convert to string if it's a dictionary
+    model_args_str = (
+        json.dumps(model_args_raw)
+        if isinstance(model_args_raw, dict)
+        else model_args_raw
+    )
+    # Apply the sanitization
+    return re.sub(
+        r"[\"<>:/|\\?*\[\]]+",
+        "__",
+        model_args_str,
+    )
 
 
 def main():
@@ -59,11 +78,15 @@ def main():
         old_tasks = tasks.copy()
         task_count = len(tasks)
         model_tasks = set(tasks_for_model(model, args.data_path))
-        tasks.intersection(set(model_tasks))
+        tasks &= set(model_tasks)
 
         if task_count != len(tasks):
             eval_logger.warning(
-                f"All models must have the same tasks. {model} has tasks: {model_tasks} but have already recorded tasks: {old_tasks}. Taking intersection {tasks}"
+                "All models must have the same tasks. %s has tasks: %s but have already recorded tasks: %s. Taking intersection %s",
+                model,
+                model_tasks,
+                old_tasks,
+                tasks,
             )
 
     assert len(tasks) > 0, (
@@ -84,26 +107,26 @@ def main():
             latest_sample_results = get_latest_filename(
                 [Path(f).name for f in model_sample_filenames if task in f]
             )
-            model_args = re.sub(
-                r"[\"<>:/\|\\?\*\[\]]+",
-                "__",
-                json.load(
-                    open(Path(args.data_path, model, latest_results), encoding="utf-8")
-                )["config"]["model_args"],
-            )
+            # Load the model_args, which can be either a string or a dictionary
+            with open(
+                Path(args.data_path, model, latest_results),
+                encoding="utf-8",
+            ) as f:
+                model_args = sanitize_string(json.load(f)["config"]["model_args"])
+
             print(model_args)
             data = []
             with open(
                 Path(args.data_path, model, latest_sample_results),
-                "r",
                 encoding="utf-8",
             ) as file:
                 for line in file:
                     data.append(json.loads(line.strip()))
 
-            configs = json.load(
-                open(Path(args.data_path, model, latest_results), encoding="utf-8")
-            )["configs"]
+            with open(
+                Path(args.data_path, model, latest_results), encoding="utf-8"
+            ) as f:
+                configs = json.load(f)["configs"]
             config = configs[task]
 
             if model_index == 0:  # Only need to assemble data for the first model
@@ -152,7 +175,8 @@ def tasks_for_model(model: str, data_path: str):
     model_files = [f.as_posix() for f in model_dir.iterdir() if f.is_file()]
     model_results_filenames = get_results_filenames(model_files)
     latest_results = get_latest_filename(model_results_filenames)
-    config = (json.load(open(latest_results, encoding="utf-8"))["configs"],)
+    with open(latest_results, encoding="utf-8") as f:
+        config = (json.load(f)["configs"],)
     return list(config[0].keys())
 
 
@@ -187,9 +211,10 @@ def generate_dataset(
             + "\n".join([f"- {y[1]}" for y in x["arguments"]])
             for x in data
         ]
-    elif config["output_type"] == "loglikelihood_rolling":
-        instance = [x["arguments"]["gen_args_0"]["arg_0"] for x in data]
-    elif config["output_type"] == "generate_until":
+    elif (
+        config["output_type"] == "loglikelihood_rolling"
+        or config["output_type"] == "generate_until"
+    ):
         instance = [x["arguments"]["gen_args_0"]["arg_0"] for x in data]
 
     return pd.DataFrame(
